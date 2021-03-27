@@ -1,5 +1,3 @@
-;EMulate keys
-; #pragma compile(Icon, C:\Program Files\AutoIt3\Icons\au3.ico)
 #pragma compile(UPX, False)
 #pragma compile(FileDescription, Emulate keys)
 #pragma compile(ProductName, Emulate keys)
@@ -7,20 +5,185 @@
 #pragma compile(FileVersion, 0.4.0.0, 0.4.0.0)
 #pragma compile(LegalCopyright, © 2018-2021 MT Programs, All rights reserved)
 #pragma compile(CompanyName, 'MT Programs')
-;include
-#include <AutoItConstants.au3>
-#include <EditConstants.au3>
-#Include<fileConstants.au3>
-#include <guiConstantsEx.au3>
-#include <new\reader.au3>
-#include <new\sapi.au3>
-#include <new\NVDAControllerClient.au3>
-#include <new\kbc.au3>
-#include <new\menu_nvda.au3>
-#include <WindowsConstants.au3>
+Global Const $BI_ENABLE = 0
+Global Const $BI_DISABLE = 1
+Global Const $ES_AUTOVSCROLL = 64
+Global Const $ES_AUTOHSCROLL = 128
+Global Const $ES_READONLY = 2048
+Global Const $FO_READ = 0
+Global Const $GUI_EVENT_CLOSE = -3
+Global Const $GUI_CHECKED = 1
+Global Const $GUI_FOCUS = 256
+Global Const $GUI_DEFBUTTON = 512
+$sapi=objcreate("sapi.spvoice")
+If @Error then
+MsgBox(4096, "Error", "Could not initialize sapi 5 engine.")
+endIf
+func speak($sText,$Ivalue=0)
+$sapi.Speak($sText,$ivalue)
+EndFunc
+Func NVDAController_CancelSpeech()
+Local $aRet = DllCall("nvdaControllerClient32.dll", "ulong", "nvdaController_cancelSpeech")
+If @error Then Return SetError(@error, @extended, Null)
+Return SetError(0, 0, $aRet[0])
+EndFunc
+Func NVDAController_SpeakText($text)
+Local $aRet = DllCall("nvdaControllerClient32.dll", "ulong", "nvdaController_speakText", "wstr", $text)
+If @error Then Return SetError(@error, @extended, Null)
+Return SetError(0, 0, $aRet[0])
+EndFunc
+func speaking($text)
+$speak = iniRead("config\config.st", "accessibility", "Speak Whit", "")
+select
+case $speak ="NVDA"
+NVDAController_Speaktext($text)
+case $speak ="Sapi"
+speak($text)
+Case Else
+autoDetect()
+endselect
+endfunc
+func autodetect()
+If ProcessExists("NVDA.exe") Then
+IniWrite("config\config.st", "accessibility", "Speak Whit", "NVDA")
+else
+IniWrite("config\config.st", "accessibility", "Speak Whit", "Sapi")
+endif
+endfunc
+func TTsDialog($text)
+$pressed = 0
+$repeatinfo = 0
+speaking($text &" press enter to continue, space to repeat information.")
+While 1
+$active_window = WinGetProcess("")
+If $active_window = @AutoItPid Then
+Sleep(10)
+EndIf
+If NOT _ispressed($spacebar) Then $repeatinfo = 0
+If _ispressed($spacebar) AND $repeatinfo = 0 Then
+$repeatinfo = 1
+speaking($text)
+EndIf
+If NOT _ispressed($enter) Then $pressed = 0
+If _ispressed($enter) AND $pressed = 0 Then
+$pressed = 1
+speaking("ok")
+ExitLoop
+endIf
+Sleep(10)
+wend
+endFunc
+Global Const $MB_ICONERROR = 16
+Global Const $MB_SYSTEMMODAL = 4096
+Func _IsPressed($sHexKey, $vDLL = "user32.dll")
+Local $aReturn = DllCall($vDLL, "short", "GetAsyncKeyState", "int", "0x" & $sHexKey)
+If @error Then Return SetError(@error, @extended, False)
+Return BitAND($aReturn[0], 0x8000) <> 0
+EndFunc
+Global Const $i = "49"
+Global Const $x = "58"
+Dim $keys[200]
+$dll = DLLOpen("user32.dll")
+Func key_pressed($hexKey)
+Local $aR, $bO
+$hexKey = '0x' & $hexKey
+$aR = DllCall($dll, "int", "GetAsyncKeyState", "int", $hexKey)
+If Not @error And BitAND($aR[0], 0x8000) = 0x8000 Then
+$bO = 1
+Else
+$bO = 0
+EndIf
+Return $bO
+EndFunc
+Func check_key($hextemp,$entry)
+$hex = "" & $hextemp & ""
+$tempkey = key_pressed("" & $hex & "")
+If $tempkey = -1 Then return -1
+If $tempkey = 1 Then
+$intstatus = $keys[$entry]
+$status = "" & $intstatus & ""
+If $status = "1" Then
+Return 0
+EndIf
+If $status = "2" Then
+Return 0
+EndIf
+If $status = "0" Then
+$keys[$entry] = 1
+Return 1
+EndIf
+Else
+$keys[$entry] = 0
+Return 0
+EndIf
+EndFunc
+Func Reader_create_menu($description,$options)
+If $description = "" Then Return 0
+If $options = "" Then Return 0
+$selection = 1
+$items = StringSplit($options, ",")
+If @error Then Return 0
+$menu_length = $items[0]
+Speaking($description)
+While 1
+$active_window = WinGetProcess("")
+If $active_window = @AutoItPID Then
+Else
+Sleep(10)
+ContinueLoop
+EndIf
+$menu_key = ""
+$capt = check_key("26", 2)
+If $capt = 1 Then
+$menu_key = "up arrow"
+EndIf
+$capt = check_key("28", 3)
+If $capt = 1 Then
+$menu_key = "down arrow"
+EndIf
+$capt = check_key("0D", 5)
+If $capt = 1 Then
+$menu_key = "enter"
+EndIf
+If $menu_key = "" Then
+Sleep(10)
+ContinueLoop
+EndIf
+If $menu_key = "enter" Then
+If $selection > 0 Then
+$menu = ""
+Speaking("OK")
+Return $selection
+EndIf
+EndIf
+If $menu_key = "up arrow" Then
+$selection = $selection - 1
+If $selection < 1 Then
+$selection = $menu_length
+EndIf
+$file_to_open = $items[$selection]
+SoundPlay("sounds\soundsdata.dat\bound.mp3",0)
+Speaking($file_to_open)
+EndIf
+If $menu_key = "down arrow" Then
+$selection = $selection + 1
+$limit = $menu_length + 1
+If $selection = $limit Then
+$selection = 1
+EndIf
+$file_to_open = $items[$selection]
+SoundPlay("sounds\soundsdata.dat\bound.mp3",0)
+Speaking($file_to_open)
+EndIf
+Sleep(10)
+WEnd
+EndFunc
+Global Const $WS_TABSTOP = 0x00010000
+Global Const $WS_VSCROLL = 0x00200000
+Global Const $WS_CLIPSIBLINGS = 0x04000000
 checkselector()
 func checkselector()
-global $sLanguage = iniRead ("config\config.st", "General settings", "language", "")
+global $sLanguage = iniRead("config\config.st", "General settings", "language", "")
 select
 case $sLanguage ="es"
 checkupd()
@@ -40,12 +203,10 @@ GUICtrlCreateLabel("Select language:", 30, 50,$widthCell)
 GUISetBkColor(0x00E0FFFF)
 GUISetState(@SW_SHOW)
 $windowslanguage= @OSLang
-;Spanish languages: Idiomas en español:
 select
 case $windowslanguage = "0c0a" or $windowslanguage = "040a" or $windowslanguage = "080a" or $windowslanguage = "100a" or $windowslanguage = "140a" or $windowslanguage = "180a" or $windowslanguage = "1c0a" or $windowslanguage = "200a" or $windowslanguage = "240a" or $windowslanguage = "280a" or $windowslanguage = "2c0a" or $windowslanguage = "300a" or $windowslanguage = "340a" or $windowslanguage = "380a" or $windowslanguage = "3c0a" or $windowslanguage = "400a" or $windowslanguage = "440a" or $windowslanguage = "480a" or $windowslanguage = "4c0a" or $windowslanguage = "500a"
 $menu=Reader_create_menu("Por favor, selecciona tu idioma", "español,inglés,salir")
-;English languages: Idiomas para inglés:
-case $windowslanguage = "0809" or $windowslanguage = "0c09" or $windowslanguage = "1009" or $windowslanguage = "1409" or $windowslanguage = "1809" or $windowslanguage = "1c09" or $windowslanguage = "2009" or $windowslanguage = "2409" or $windowslanguage = "2809" or $windowslanguage = "2c09" or $windowslanguage = "3009" or $windowslanguage = "3409" or $windowslanguage = "0425" or 
+case $windowslanguage = "0809" or $windowslanguage = "0c09" or $windowslanguage = "1009" or $windowslanguage = "1409" or $windowslanguage = "1809" or $windowslanguage = "1c09" or $windowslanguage = "2009" or $windowslanguage = "2409" or $windowslanguage = "2809" or $windowslanguage = "2c09" or $windowslanguage = "3009" or $windowslanguage = "3409" or $windowslanguage = "0425" or
 $menu=Reader_create_menu("Please select language", "spanish,english,exit")
 case else
 $menu=Reader_create_menu("Please select language", "spanish,english,exit")
@@ -58,7 +219,7 @@ GUIDelete($langGUI)
 SoundPlay("sounds\soundsdata.dat\selected.mp3",0)
 checkupd()
 case $menu = 2
-IniWrite ("config\config.st", "General settings", "language", "eng")
+IniWrite("config\config.st", "General settings", "language", "eng")
 sleep(100)
 GUIDelete($langGUI)
 SoundPlay("sounds\soundsdata.dat\selected.mp3",0)
@@ -77,7 +238,7 @@ slep(500)
 GUIDelete($main_u)
 endfunc
 func checKmkversion()
-$sLanguage = iniRead ("config\config.st", "General settings", "language", "")
+$sLanguage = iniRead("config\config.st", "General settings", "language", "")
 Local $yourexeversion = FileGetVersion("EMK.exe")
 select
 case $sLanguage ="es"
@@ -88,9 +249,8 @@ $newversion=" You have the version "
 $newversion2=", And is available the "
 endselect
 $fileinfo = InetGet("https://www.dropbox.com/s/9iyflhit0t8ddbd/MKWeb.dat?dl=1", "MKWeb.dat")
-;$file_down = FileOpen("MKWeb.dat")
 FileCopy("MKWeb.dat", @TempDir & "\MKWeb.dat")
-$latestver = iniRead (@TempDir & "\MKWeb.dat", "updater", "LatestVersion", "")
+$latestver = iniRead(@TempDir & "\MKWeb.dat", "updater", "LatestVersion", "")
 if $sLanguage ="Es" then
 select
 Case $latestVer > $yourexeversion
@@ -98,9 +258,7 @@ speak("hay una nueva versión.", 3)
 TTSDialog("actualización disponible! " &$newversion &$yourexeversion &$newversion2 &$latestver& ". Presiona enter para descargar.")
 sleep(100)
 RunUpdater()
-;GUIDelete($main_u)
 Case else
-;GUIDelete($main_u)
 principal()
 endselect
 endif
@@ -117,7 +275,7 @@ endif
 InetClose($fileinfo)
 endfunc
 Func RunUpdater()
-$Lang = iniRead ("config\config.st", "General settings", "language", "")
+$Lang = iniRead("config\config.st", "General settings", "language", "")
 select
 case $Lang ="es"
 $err1="Error"
@@ -149,7 +307,7 @@ EndIf
 endfunc
 GUIDelete($main_u)
 func principal()
-$slanguage = iniRead ("config\config.st", "General settings", "language", "")
+$slanguage = iniRead("config\config.st", "General settings", "language", "")
 global $program_ver = 0.4
 SoundPlay("sounds\soundsdata.dat\open.mp3",1)
 $Gui_main = guicreate("Emulate keys " &$program_ver)
@@ -199,11 +357,9 @@ GUICtrlCreateLabel($mensaje11, 0,100,20,20,$WS_TABSTOP)
 GUICtrlSetState(-1, $GUI_FOCUS)
 Local $idExitbutton = GUICtrlCreateButton($mensaje12, 120, 100, 20, 20)
 GUISetState(@SW_SHOW)
-; Loop until the user exits.
 While 1
 Switch GUIGetMsg()
 Case $idSenditem
-;GUIDelete($gui_main)
 _send()
 Case $idEMKitem
 replace()
@@ -228,7 +384,7 @@ $combo=InputBox("Correo Electrónico, opcional", "Escribe tu correo electrónico
 if $combo="" then
 $combo="No se ha especificado."
 endif
-$correo="Correo electrónico: " (&$combo)
+$correo="Correo electrónico: "(&$combo)
 case $sLanguage ="eng"
 $mensaje=InputBox("Report a bug...", "Tell us in this box what you want to report or suggest:", "")
 if $mensaje="" then
@@ -242,45 +398,43 @@ $combo=InputBox("Email, optional", "Write your email in case we need to contact 
 if $combo="" then
 $combo="Not specified."
 endif
-$correo="Email: " (&$combo)
+$correo="Email: "(&$combo)
 endselect
 $program="Emulate Keys, "
-$SmtpServer = "smtp.gmail.com"              ; address for the smtp-server to use - REQUIRED
+$SmtpServer = "smtp.gmail.com"
 select
 case $sLanguage ="es"
-$FromName = "Reportero de errores"                      ; name from who the email was sent
+$FromName = "Reportero de errores"
 case $sLanguage ="eng"
-$FromName = "Bug reporter"                      ; name from who the email was sent
+$FromName = "Bug reporter"
 endselect
-$FromAddress = "reporterodeerrores@gmail.com" ; address from where the mail should come
-$ToAddress = "angelitomateocedillo@gmail.com"   ; destination address of the email - REQUIRED
+$FromAddress = "reporterodeerrores@gmail.com"
+$ToAddress = "angelitomateocedillo@gmail.com"
 select
 case $sLanguage ="es"
 $Su1=" nos ha enbiado un reporte de error"
-$Subject = ($program &$yourname &$su1)                   ; subject from the email - can be anything you want it to be
+$Subject =($program &$yourname &$su1)
 case $sLanguage ="eng"
 $Su1=" You have sent us an error report"
-$Subject = ($program &$yourname &$su1)                   ; subject from the email - can be anything you want it to be
+$Subject =($program &$yourname &$su1)
 endselect
 select
 case $sLanguage ="es"
 $gr="Gracias, el reportero de errores."
-$Body = ($mensaje &@crlf &$correo &@crlf &$gr)                             ; the messagebody from the mail - can be left blank but then you get a blank mail
+$Body =($mensaje &@crlf &$correo &@crlf &$gr)
 case $sLanguage ="eng"
 $gr="Thanks, the bug reporter."
-$Body = ($mensaje &@crlf &$correo &@crlf &$gr)                              ; the messagebody from the mail - can be left blank but then you get a blank mail
+$Body =($mensaje &@crlf &$correo &@crlf &$gr)
 endselect
-$AttachFiles = ""                       ; the file(s) you want to attach seperated with a ; (Semicolon) - leave blank if not needed
-$CcAddress = ""       ; address for cc - leave blank if not needed
-$BccAddress = ""     ; address for bcc - leave blank if not needed
-$Importance = "High"                  ; Send message priority: "High", "Normal", "Low"
-$Username = "Reporterodeerrores"                    ; username for the account used from where the mail gets sent - REQUIRED
-$Password = "superpollo1234567890"                  ; password for the account used from where the mail gets sent - REQUIRED
-$IPPort = 465                            ; port used for sending the mail
-$ssl = 1                                ; enables/disables secure socket layer sending - put to 1 if using httpS
-;~ $IPPort=465                          ; GMAIL port used for sending the mail
-;~ $ssl=1                               ; GMAILenables/disables secure socket layer sending - put to 1 if using httpS
-_SednMail ($SmtpServer, $FromName, $FromAddress, $ToAddress, $Subject, $Body, $AttachFiles, $CcAddress, $BccAddress, $Importance, $Username, $Password, $IPPort, $ssl)
+$AttachFiles = ""
+$CcAddress = ""
+$BccAddress = ""
+$Importance = "High"
+$Username = "Reporterodeerrores"
+$Password = "superpollo1234567890"
+$IPPort = 465
+$ssl = 1
+_SednMail($SmtpServer, $FromName, $FromAddress, $ToAddress, $Subject, $Body, $AttachFiles, $CcAddress, $BccAddress, $Importance, $Username, $Password, $IPPort, $ssl)
 Case $idHelpitema
 select
 case $slanguage ="es"
@@ -292,11 +446,11 @@ continueLoop
 case $idHelpitemb
 playhelp()
 case $idHelpitemc
-			ShellExecute("http://mateocedillo.260mb.net/")
+ShellExecute("http://mateocedillo.260mb.net/")
 EndSwitch
 WEnd
 EndFunc
-Func _SednMail ($SmtpServer, $FromName, $FromAddress, $ToAddress, $Subject, $Body, $AttachFiles, $CcAddress, $BccAddress, $Importance, $Username, $Password, $IPPort, $ssl)
+Func _SednMail($SmtpServer, $FromName, $FromAddress, $ToAddress, $Subject, $Body, $AttachFiles, $CcAddress, $BccAddress, $Importance, $Username, $Password, $IPPort, $ssl)
 Global $oMyRet[2]
 Global $oMyError = ObjEvent("AutoIt.Error", "MyErrFunc")
 $rc = _INetSmtpMailCom($SmtpServer, $FromName, $FromAddress, $ToAddress, $Subject, $Body, $AttachFiles, $CcAddress, $BccAddress, $Importance, $Username, $Password, $IPPort, $ssl)
@@ -305,78 +459,71 @@ MsgBox(0, "Error sending message", "Error code:" & @error & "  Description:" & $
 EndIf
 endfunc
 Func _INetSmtpMailCom($s_SmtpServer, $s_FromName, $s_FromAddress, $s_ToAddress, $s_Subject = "", $as_Body = "", $s_AttachFiles = "", $s_CcAddress = "", $s_BccAddress = "", $s_Importance="Normal", $s_Username = "", $s_Password = "", $IPPort = 465, $ssl = 1)
-    Local $objEmail = ObjCreate("CDO.Message")
-    $objEmail.From = '"' & $s_FromName & '" <' & $s_FromAddress & '>'
-    $objEmail.To = $s_ToAddress
-    Local $i_Error = 0
-    Local $i_Error_desciption = ""
-    If $s_CcAddress <> "" Then $objEmail.Cc = $s_CcAddress
-    If $s_BccAddress <> "" Then $objEmail.Bcc = $s_BccAddress
-    $objEmail.Subject = $s_Subject
-    If StringInStr($as_Body, "<") And StringInStr($as_Body, ">") Then
-        $objEmail.HTMLBody = $as_Body
-    Else
-        $objEmail.Textbody = $as_Body & @CRLF
-    EndIf
-    If $s_AttachFiles <> "" Then
-        Local $S_Files2Attach = StringSplit($s_AttachFiles, ";")
-        For $x = 1 To $S_Files2Attach[0]
-            $S_Files2Attach[$x] = _PathFull($S_Files2Attach[$x])
-;~          ConsoleWrite('@@ Debug : $S_Files2Attach[$x] = ' & $S_Files2Attach[$x] & @LF & '>Error code: ' & @error & @LF) ;### Debug Console
-            If FileExists($S_Files2Attach[$x]) Then
-                ConsoleWrite('+> File attachment added: ' & $S_Files2Attach[$x] & @LF)
-                $objEmail.AddAttachment($S_Files2Attach[$x])
-            Else
-                ConsoleWrite('!> File not found to attach: ' & $S_Files2Attach[$x] & @LF)
-                SetError(1)
-                Return 0
-            EndIf
-        Next
-    EndIf
-    $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
-    $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpserver") = $s_SmtpServer
-    If Number($IPPort) = 0 then $IPPort = 25
-    $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = $IPPort
-    ;Authenticated SMTP
-    If $s_Username <> "" Then
-        $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1
-        $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/sendusername") = $s_Username
-        $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/sendpassword") = $s_Password
-    EndIf
-    If $ssl Then
-        $objEmail.Configuration.Fields.Item ("http://schemas.microsoft.com/cdo/configuration/smtpusessl") = True
-    EndIf
-    ;Update settings
-    $objEmail.Configuration.Fields.Update
-    ; Set Email Importance
-    Switch $s_Importance
-        Case "High"
-            $objEmail.Fields.Item ("urn:schemas:mailheader:Importance") = "High"
-        Case "Normal"
-            $objEmail.Fields.Item ("urn:schemas:mailheader:Importance") = "Normal"
-        Case "Low"
-            $objEmail.Fields.Item ("urn:schemas:mailheader:Importance") = "Low"
-    EndSwitch
-    $objEmail.Fields.Update
-    ; Sent the Message
-    $objEmail.Send
-    If @error Then
-        SetError(2)
-        Return $oMyRet[1]
-    EndIf
-    $objEmail=""
-EndFunc   ;==>_INetSmtpMailCom
+Local $objEmail = ObjCreate("CDO.Message")
+$objEmail.From = '"' & $s_FromName & '" <' & $s_FromAddress & '>'
+$objEmail.To = $s_ToAddress
+If $s_CcAddress <> "" Then $objEmail.Cc = $s_CcAddress
+If $s_BccAddress <> "" Then $objEmail.Bcc = $s_BccAddress
+$objEmail.Subject = $s_Subject
+If StringInStr($as_Body, "<") And StringInStr($as_Body, ">") Then
+$objEmail.HTMLBody = $as_Body
+Else
+$objEmail.Textbody = $as_Body & @CRLF
+EndIf
+If $s_AttachFiles <> "" Then
+Local $S_Files2Attach = StringSplit($s_AttachFiles, ";")
+For $x = 1 To $S_Files2Attach[0]
+$S_Files2Attach[$x] = _PathFull($S_Files2Attach[$x])
+If FileExists($S_Files2Attach[$x]) Then
+ConsoleWrite('+> File attachment added: ' & $S_Files2Attach[$x] & @LF)
+$objEmail.AddAttachment($S_Files2Attach[$x])
+Else
+ConsoleWrite('!> File not found to attach: ' & $S_Files2Attach[$x] & @LF)
+SetError(1)
+Return 0
+EndIf
+Next
+EndIf
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusing") = 2
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserver") = $s_SmtpServer
+If Number($IPPort) = 0 then $IPPort = 25
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpserverport") = $IPPort
+If $s_Username <> "" Then
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpauthenticate") = 1
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendusername") = $s_Username
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/sendpassword") = $s_Password
+EndIf
+If $ssl Then
+$objEmail.Configuration.Fields.Item("http://schemas.microsoft.com/cdo/configuration/smtpusessl") = True
+EndIf
+$objEmail.Configuration.Fields.Update
+Switch $s_Importance
+Case "High"
+$objEmail.Fields.Item("urn:schemas:mailheader:Importance") = "High"
+Case "Normal"
+$objEmail.Fields.Item("urn:schemas:mailheader:Importance") = "Normal"
+Case "Low"
+$objEmail.Fields.Item("urn:schemas:mailheader:Importance") = "Low"
+EndSwitch
+$objEmail.Fields.Update
+$objEmail.Send
+If @error Then
+SetError(2)
+Return $oMyRet[1]
+EndIf
+$objEmail=""
+EndFunc
 Func MyErrFunc()
-    $HexNumber = Hex($oMyError.number, 8)
-    $oMyRet[0] = $HexNumber
-    $oMyRet[1] = StringStripWS($oMyError.description, 3)
-    ConsoleWrite("### COM Error !  Number: " & $HexNumber & "   ScriptLine: " & $oMyError.scriptline & "   Description:" & $oMyRet[1] & @LF)
-    SetError(1); something to check for when this function returns
-    Return
-EndFunc   ;==>MyErrFunc
+$HexNumber = Hex($oMyError.number, 8)
+$oMyRet[0] = $HexNumber
+$oMyRet[1] = StringStripWS($oMyError.description, 3)
+ConsoleWrite("### COM Error !  Number: " & $HexNumber & "   ScriptLine: " & $oMyError.scriptline & "   Description:" & $oMyRet[1] & @LF)
+SetError(1)
+Return
+EndFunc
 func playhelp()
 select
-case $sLanguage  ="es"
+case $sLanguage ="es"
 Local $manualdoc = "documentation\manual1.txt"
 $editmessage1="Manual del usuario."
 $editmessage2="No se encuentra el archivo."
@@ -399,7 +546,6 @@ Local $openned = FileRead($DocOpen)
 $manualwindow = GUICreate($manualdoc)
 Local $idMyedit = GUICtrlCreateEdit($openned, 8, 92, 121, 97, BitOR($ES_AUTOVSCROLL, $ES_AUTOHSCROLL, $ES_READONLY, $WS_VSCROLL, $WS_VSCROLL, $WS_CLIPSIBLINGS))
 GUISetState(@SW_SHOW)
-; Loop until the user exits.
 While 1
 Switch GUIGetMsg()
 Case $GUI_EVENT_CLOSE
@@ -410,8 +556,8 @@ WEnd
 GUIDelete()
 EndFunc
 func _send()
-$lang = iniRead ("config\config.st", "General settings", "language", "")
-$read_speed = iniRead ("config\config.st", "Key settings", "Speed", "")
+$lang = iniRead("config\config.st", "General settings", "language", "")
+$read_speed = iniRead("config\config.st", "Key settings", "Speed", "")
 select
 case $lang ="es"
 $message1="introduzca el nombre de la aplicación:"
@@ -506,7 +652,6 @@ beep(2000,200)
 sleep(800)
 speaking($message8)
 WINWAITACTIVE($enterApp)
-;estableciendo teclas
 FOR $I=0 TO $RepeatKey STEP 1
 $keysound = Random(1, 10, 1)
 SEND($SendKey)
@@ -531,7 +676,7 @@ exit
 endselect
 endfunc
 func block()
-$lang = iniRead ("config\config.st", "General settings", "language", "")
+$lang = iniRead("config\config.st", "General settings", "language", "")
 select
 case $lang="es"
 $block1="¡Atención! Estás consciente de que esta opción bloqueará la entrada de teclado y mouse. Úsala solamente por si la necesitas. para desbloquear tu dispositivo, usa las teclas control + shift + b."
@@ -543,18 +688,18 @@ global $block2="Blocked."
 global $block3="Unlocked."
 endSelect
 ttsDialog($block1)
-	BlockInput($BI_DISABLE)
+BlockInput($BI_DISABLE)
 speaking($block2)
 HotKeySet("^+b", "unlock")
 $bloked="1"
 endFunc
 func unlock()
-	BlockInput($BI_ENABLE)
+BlockInput($BI_ENABLE)
 speaking($block3)
 HotKeySet("^+b", "block")
 endFunc
 func replace()
-$lang = iniRead ("config\config.st", "General settings", "language", "")
+$lang = iniRead("config\config.st", "General settings", "language", "")
 select
 case $lang="es"
 $message1="Nombre de tecla"
@@ -584,7 +729,7 @@ sleep(300)
 exitpersonaliced()
 endIf
 replaceKeys()
-$ifExists = iniRead ("config\config.st", "Key settings", $orig, "")
+$ifExists = iniRead("config\config.st", "Key settings", $orig, "")
 if $ifExists = $KeyToReplace then
 MsgBox($MB_SYSTEMMODAL + $MB_ICONERROR, "Error", $message6)
 else
@@ -595,7 +740,7 @@ endFunc
 func replaceKeys()
 speaking("loading...")
 global $aArray = IniReadSection("config\config.st", "Key Settings")
-	If @error Then
+If @error Then
 msgbox(0, "error", "error reading keymaps.")
 else
 For $i = 1 To $aArray[0][0]
@@ -611,7 +756,7 @@ Switch @HotKeyPressed
 case $aArray[$i][0]
 send($aArray[$i][1]
 EndSwitch
-		Next
+Next
 sleep(5)
 wEnd
 endFunc

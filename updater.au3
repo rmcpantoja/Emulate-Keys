@@ -12,7 +12,7 @@
 #pragma compile(LegalCopyright, © 2018-2020 MT Programs, All rights reserved)
 #pragma compile(CompanyName, 'MT Programs')
 ;Including scripts
-#include <new\audio.au3>
+;#include <new\audio.au3>
 #include <AutoItConstants.au3>
 #include <GUIConstantsEx.au3>
 #include <new\kbc.au3>
