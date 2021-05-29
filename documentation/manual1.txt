@@ -1,0 +1,96 @@
+Manual de EMulate Keys
+* ¿Qué es?
+Emulate keys es una sencilla herramienta para realizar distintas actividades con tu teclado, por ejemplo, enviar teclas a una ventana, reemplazar una tecla a otra, etc. Alternativa a ShartKeys, a diferencia de que no toca ninguna clave al registro y tiene más funciones para explorar.
+* ¿Cómo funciona?
+Simplemente basta con abrir EMK.exe, si lo ejecutas por primera vez te aparecerá un menú para seleccionar tu idioma, por ahora inglés y español.
+Una vez seleccionado te mostrará una sencilla interfaz en pantalla, pulsando alt podemos explorar el menú donde se encuentran distintas opciones:
+** Enviar teclas a una aplicación: Sirve para enviar distintas teclas o atajos. Si entramos en esta opción, te saldrán los campos siguientes:
+* Nombre de aplicación: El nombre exacto de la ventana. Ten en cuenta que si usas NVDA, puedes copiar el título pulsando NVDA+t 3 veces seguidas.
+* Teclas: La tecla o las teclas que se van a pulsar. Importante. Por favor, si quieres saber su escritura mira la sección "escritura de teclas" Más abajo.
+* Repeticiones: El número de veces que se realizará esta acción.
+Una vez rellenados estos 3 campos, nos avisará de que tenemos 3 segundos para ir a la aplicación y luego comenzará con los envíos que configuraste.
+** Reemplazar teclas por otras. Te permite reemplazar pulsos de una tecla por otra. Si abrimos esta opción, nos encontraremos con 2 campos:
+*Tecla original: La tecla que quieres dar el reemplazo. En ese caso puedes poner una tecla que no soporte tu computadora, ej. Imprimir pantalla, teclas de función, del teclado numérico, flechas, letras, etc. O la tecla que necesites que se reemplace. Ten cuidado al escribir.
+*Tecla de reemplazo: La tecla o las teclas que reemplazarán a la original.
+finalmente, emulate keys comenzará a guardar tu mapeo de teclado en un archivo y comenzará a activar las nuevas teclas de reemplazo que asignaste, por lo que ahora podrás interactuar con aquellas teclas que por alguna razón no puedas pulsarlas, o tu máquina no las soporte.
+Nota importante. Para saber la escritura de cada una de las teclas, lee la sección "escritura de teclas" Más abajo.
+* Teclado sonoro: Esta opción te permite simular el sonido del teclado cuando escribes texto.
+* Bloquear mouse y teclado: Esta opción, como su título indica, bloquea el mouse y el teclado, útil por si no quieres que otras personas los utilicen en lugares públicos.
+*Salir: Sale del programa.
+*Menú ayuda:
+En el menú de ayuda tenemos todo lo necesario para saber acerca de este programa, visitar la web y el presente manual.
+*Escritura de teclas:
+Ten en cuenta que debes pulsar el nombre correcto de las teclas y en inglés, pero no te preocupes, te explicaré dichas teclas correspondientes en español. EN algunos casos se deben colocar el nombre entre llaves.
+:Teclas que se deben colocar entre llaves:
+Tecla original
+descripción
+{enter}
+Tecla enter.
+{space}
+Tecla de espacio o barra espaciadora.
+{escape}
+Tecla escape.
+{del}
+Suprimir o borrar.
+{bs}
+Tecla retroceso.
+{up}
+Flecha arriba.
+{down}
+flecha abajo.
+{left}
+Flecha izquierda.
+{right}
+Flecha derecha.
+{home}
+Inicio.
+{end}
+fin
+{PGUP}
+Retroceso de página
+{PGDN}
+Avance de página
+{F1} a {F12}
+Teclas de funciones
+{TAB}
+Tab o Tabulación
+{PRINTSCREEN}
+Tecla de imprimir o capturar la pantalla
+{LWIN}
+Windows izquierda
+{RWIN}
+Windows Derecha
+{NUMLOCK}
+Activa o desactiva el teclado numérico.
+{CAPSLOCK}
+Bloqueo de mayúsculas
+{NUMPAD0} a {NUMPAD9}
+Números del teclado numérico
+{NUMPADMULT}
+Multiplicar teclado numérico
+{NUMPADADD}
+Sumar teclado numérico
+{NUMPADSUB}
+Restar teclado numérico
+{NUMPADDIV}
+Dividir del teclado numérico
+{NUMPADDOT}
+Punto teclado numérico
+{NUMPADENTER}
+ENter del teclado numérico
+{LALT}
+Alt Izquierda
+{RALT}
+Alt Derecha
+{LCTRL}
+Control izquierda
+{RCTRL}
+Control derecha
+{LSHIFT}
+Shift izquierda
+{RSHIFT}
+Shift derecha
+Las teclas que se escriben normalmente sin llaves son las de la a a la z.
+*Agradecimientos:
+Gracias a todos quienes han ayudado en el proyecto, en especial a Juan Panza por la idea principal de esta herramienta. Toda ayuda es bien recibida.
+Fin.
