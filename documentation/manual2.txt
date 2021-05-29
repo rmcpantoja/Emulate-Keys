@@ -1,0 +1,96 @@
+EMulate Keys Manual
+* What is it?
+Emulate keys is a simple tool to perform different activities with your keyboard, for example, send keys to a window, replace one key to another, etc. Alternative to ShartKeys, unlike it doesn't touch any registry keys and has more features to explore.
+* How does it work?
+Simply open EMK.exe. If you run it for the first time, a menu will appear to select your language, for now English and Spanish.
+Once selected, it will show you a simple interface on the screen, by pressing alt we can explore the menu where there are different options:
+** Send keys to an application: Used to send different keys or shortcuts. If we enter this option, the following fields will appear:
+* Application name: The exact name of the window. Note that if you use NVDA, you can copy the title by pressing NVDA + t 3 times in a row.
+* Keys: The key or keys to be pressed. Important. Please, if you want to know its writing see the section "key writing" below.
+* Repetitions: The number of times this action will be performed.
+Once these 3 fields are filled in, it will notify us that we have 3 seconds to go to the application and then it will start with the shipments that you configured.
+** Replace keys with others. It allows you to replace beats of one key with another. If we open this option, we will find 2 fields:
+* Original key: The key you want to give the replacement. In that case you can put a key that your computer does not support, eg. Print screen, function keys, numeric keypad, arrows, letters, etc. Or the key that you need to be replaced. Be careful when writing.
+* Replacement key: The key or keys that will replace the original.
+finally, emulate keys will start saving your keyboard mapping in a file and will start to activate the new replacement keys that you assigned, so now you will be able to interact with those keys that for some reason you cannot press them, or your machine does not support them.
+Important note. To know the writing of each of the keys, read the section "Key writing" below.
+* Sound keyboard: This option allows you to simulate the sound of the keyboard when you write text.
+* Lock mouse and keyboard: This option, as its title indicates, locks the mouse and keyboard, useful if you don't want other people to use them in public places.
+* Exit: Exits the program.
+* Help menu:
+In the help menu we have everything you need to know about this program, visit the website and this manual.
+* Key writing:
+Keep in mind that you must press the correct name of the and keys in English. IN some cases, the name must be enclosed in braces.
+: Keys to be placed between braces:
+Original key
+description
+{enter}
+Enter key.
+{space}
+Space key or space bar.
+{escape}
+Escape key.
+{Del}
+Delete key.
+{bs}
+BackSpace key.
+{up}
+Up arrow.
+{down}
+down arrow.
+{left}
+Left arrow.
+{right}
+Right arrow.
+{home}
+Start.
+{end}
+end
+{PGUP}
+Page down
+{PGDN}
+Page advance
+{F1} to {F12}
+Function keys
+{TAB}
+Tab key.
+{PRINTSCREEN}
+Print or screen capture key
+{LWIN}
+Windows left
+{RWIN}
+Windows Right
+{NUMLOCK}
+Enables or disables the numeric keypad.
+{CAPSLOCK}
+Caps Lock
+{NUMPAD0} to {NUMPAD9}
+Numbers on the numeric keypad
+{NUMPADMULT}
+Multiply numeric keypad
+{NUMPADADD}
+Add numeric keypad
+{NUMPADSUB}
+Subtract numeric keypad
+{NUMPADDIV}
+Divide from the numeric keypad
+{NUMPADDOT}
+Numeric keypad dot.
+{NUMPADENTER}
+ENter on the numeric keypad.
+{LALT}
+Alt Left
+{RALT}
+Alt Right
+{LCTRL}
+Left control
+{RCTRL}
+Right control
+{LSHIFT}
+Left shift
+{RSHIFT}
+Right shift
+Keys that are normally written without braces are a through z.
+*Thanks:
+Thanks to all who have helped in the project, especially Juan Panza for the main idea of ​​this tool. Any help is welcome.
+End.
