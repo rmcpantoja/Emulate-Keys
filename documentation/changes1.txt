@@ -12,6 +12,7 @@ Esta es la primera beta pública. Anteriormente estaba ya publicada en la web, p
 2. Corregido error en el selector de milisegundos en la opción enviar teclas.
 2.1. Optimizado el código para una mayor rapidez.
 2.2. Corregidos algunos errores con lector de pantalla.
+2.3. La mayoría de los controles gui se comportan más rrápido con los lectores de pantalla.
 0.3 beta privada (1 de marzo de 2021)
 Agregada nueva opción para elegir la velocidad de retardo a tus gustos.
 Ahora se anuncia con un pitido el marcador de 3 segundos.

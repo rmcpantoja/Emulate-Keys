@@ -10,6 +10,7 @@ This is the first public beta. Previously it was already published on the web, b
 2. Fixed a bug in the millisecond selector in the send keys option.
 2.1. Optimized the code for speed.
 2.2. Fixed some bugs with screen reader.
+2.3. Most gui controls behave faster with screen readers.
 0.3 private beta (March 1, 2021)
 Added new option to choose the delay speed to your liking.
 The 3-second marker is now announced with a beep.

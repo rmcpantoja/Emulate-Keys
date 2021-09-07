@@ -7,7 +7,7 @@ FileInstall("sounds\soundsdata.dat\bound.mp3", @TempDIR &"\sounds\soundsdata.dat
 FileInstall("sounds\soundsdata.dat\close.mp3", @TempDIR &"\sounds\soundsdata.dat\close.mp3")
 FileInstall("sounds\soundsdata.dat\error.mp3", @TempDIR &"\sounds\soundsdata.dat\error.mp3")
 FileInstall("sounds\soundsdata.dat\open.mp3", @TempDIR &"\sounds\soundsdata.dat\open.mp3")
-FileInstall("sounds\soundsdata.dat\scroll.mp3", @TempDIR &"\sounds\soundsdata.dat\scroll.mp3")
+FileInstall("sounds\soundsdata.dat\scrollTop.mp3", @TempDIR &"\sounds\soundsdata.dat\scrollTop.mp3")
 FileInstall("sounds\soundsdata.dat\selected.mp3", @TempDIR &"\sounds\soundsdata.dat\selected.mp3")
 SPEAKING("Listo")
 EndFunc
